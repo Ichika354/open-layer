@@ -216,6 +216,43 @@ backToLocationButton.onclick = function () {
       })
     );
     markerSource.addFeature(marker);
+
+    // Ambil informasi lokasi menggunakan API OpenStreetMap
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lon=${longitude}&lat=${latitude}`)
+      .then((response) => response.json())
+      .then((data) => {
+        const locationName = data.display_name || "Tidak ada data lokasi";
+
+        // Tambahkan konten pop-up dengan tombol close
+        popup.innerHTML = `
+          <button class="close-btn">&times;</button>
+          <h3>Lokasi Anda</h3>
+          <p><strong>Alamat:</strong> ${locationName}</p>
+          <p><strong>Koordinat:</strong> ${longitude.toFixed(6)}, ${latitude.toFixed(6)}</p>
+        `;
+        overlay.setPosition(userCoordinates);
+
+        // Event untuk menutup pop-up saat tombol close diklik
+        popup.querySelector(".close-btn").addEventListener("click", () => {
+          overlay.setPosition(undefined);
+          popupVisible = false;
+        });
+      })
+      .catch(() => {
+        popup.innerHTML = `
+          <button class="close-btn">&times;</button>
+          <h3>Lokasi Anda</h3>
+          <p>Data lokasi tidak ditemukan.</p>
+          <p><strong>Koordinat:</strong> ${longitude.toFixed(6)}, ${latitude.toFixed(6)}</p>
+        `;
+        overlay.setPosition(userCoordinates);
+
+        // Event untuk menutup pop-up secara manual
+        popup.querySelector(".close-btn").addEventListener("click", () => {
+          overlay.setPosition(undefined);
+          popupVisible = false;
+        });
+      });
   } else {
     Swal.fire({
       title: "Error",
